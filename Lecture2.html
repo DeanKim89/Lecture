@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2교시: 2D 게임 구조 이해 및 Godot 기본 사용법</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 폰트어썸 아이콘 로드 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* CORE THEME & RESET */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: #0d1117; /* GitHub Dark Dimmed 느낌 */
+            color: #e6edf3;
+            font-family: 'Noto Sans KR', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* 스크롤 방지 */
+        }
+
+        /* SLIDE CONTAINER - KEYBOARD MODE STYLES */
+        .slide {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute; /* 모든 슬라이드를 겹쳐 놓음 */
+            top: 0;
+            left: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease; /* 전환 효과 */
+            border-bottom: 1px solid #30363d;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* CONTENT WRAPPER */
+        .content {
+            width: 1200px;
+            max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        /* BACKGROUND DECORATION */
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, rgba(46, 160, 67, 0.05) 0%, rgba(0,0,0,0) 70%); /* Green accent */
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        /* TYPOGRAPHY */
+        h1 { font-size: 3.5rem; font-weight: 700; margin-bottom: 1rem; line-height: 1.2; }
+        h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem; color: #7ee787; border-left: 5px solid #7ee787; padding-left: 1rem; }
+        h3 { font-size: 1.8rem; margin-bottom: 1rem; color: #a5d6ff; }
+        p, li { font-size: 1.4rem; line-height: 1.6; color: #c9d1d9; margin-bottom: 0.8rem; }
+        strong { color: #fff; font-weight: 700; }
+        
+        /* CODE BLOCK STYLE */
+        pre {
+            background: #161b22;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            color: #e6edf3;
+        }
+        code { font-family: 'JetBrains Mono', monospace; color: #ff7b72; }
+        .comment { color: #8b949e; }
+
+        /* LISTS */
+        ul { list-style: none; padding-left: 1rem; }
+        ul li::before {
+            content: "\f054"; /* FontAwesome Chevron Right */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: #7ee787;
+            display: inline-block;
+            width: 1.5em;
+            margin-left: -1.5em;
+        }
+
+        /* LAYOUTS */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+        .card { background: #21262d; padding: 2rem; border-radius: 12px; border: 1px solid #30363d; height: 100%; }
+        .center-text { text-align: center; }
+        
+        /* VISUAL ELEMENTS */
+        .big-icon { font-size: 4rem; color: #7ee787; margin-bottom: 1rem; }
+        .highlight-box { border: 2px solid #7ee787; padding: 2rem; border-radius: 12px; text-align: center; margin-top: 2rem; }
+
+        /* TREE DIAGRAM */
+        .tree-node-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            color: #c9d1d9;
+            margin-left: 0;
+        }
+        .tree-indent { margin-left: 30px; }
+        .tree-symbol { color: #79c0ff; margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+<!-- Slide 1: Title -->
+<div class="slide">
+    <div class="content center-text">
+        <p style="font-size: 1.5rem; color: #7ee787; font-weight: bold; letter-spacing: 2px; margin-bottom: 20px;">2교시</p>
+        <h1>2D 게임 구조 이해 및 Godot 기본 사용법</h1>
+        <ul style="list-style: none; padding: 0; margin-top: 3rem; text-align: left; display: inline-block;">
+            <li style="margin-bottom: 0.5rem;"><i class="fa-solid fa-layer-group" style="color: #a5d6ff;"></i> Scene과 Node 구조 이해</li>
+            <li style="margin-bottom: 0.5rem;"><i class="fa-solid fa-compass" style="color: #a5d6ff;"></i> 스프라이트, 충돌, 좌표계 학습</li>
+            <li style="margin-bottom: 0.5rem;"><i class="fa-solid fa-code" style="color: #a5d6ff;"></i> GDScript 기본 문법 익히기</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Slide 0: 왜 Godot으로 배우는가? -->
+<div class="slide">
+    <div class="content">
+        <h2>왜 Godot으로 배우는가?</h2>
+        <p>게임 엔진은 언리얼, 유니티, Godot처럼 여러 종류가 있지만, <strong>기초 학습용</strong>으로는 Godot이 가장 적합한 환경입니다.</p>
+        <div class="card" style="margin-top: 2rem;">
+            <h3>Godot 학습 이유</h3>
+            <ul>
+                <li><i class="fa-solid fa-bolt" style="color: #7ee787;"></i> <strong>가벼운 엔진</strong> → 낮은 사양에서도 원활, 설치 후 바로 실행 가능.</li>
+                <li><i class="fa-solid fa-repeat" style="color: #7ee787;"></i> <strong>수정-확인 사이클이 빠름</strong> → 빌드 없이 즉시 플레이, 학습 효율 극대화.</li>
+                <li><i class="fa-solid fa-cubes" style="color: #7ee787;"></i> <strong>Node/Scene 구조</strong> → 유니티/언리얼과 개념 재사용 가능.</li>
+                <li><i class="fa-solid fa-code" style="color: #7ee787;"></i> <strong>GDScript</strong> → Python과 유사하여 초급자가 배우기 쉬움.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 0-2: Godot을 선택한 실습 환경적 이유 -->
+<div class="slide">
+    <div class="content">
+        <h2>Godot을 선택한 실습 환경적 이유</h2>
+        <p>대규모 엔진(언리얼, 유니티)은 실습 중심 수업에 제약이 많습니다.</p>
+        <div class="grid-2">
+            <div class="card">
+                <h3>대규모 엔진의 단점 (실습 환경)</h3>
+                <ul>
+                    <li>GPU 사양 요구 높음 (학교/실습 환경에서 부담).</li>
+                    <li>프로젝트 실행·빌드 속도가 길어 학습 흐름이 끊김.</li>
+                    <li>설치 용량이 크고 준비 시간이 오래 걸림.</li>
+                </ul>
+            </div>
+            <div class="card" style="border-color: #a5d6ff;">
+                <h3>Godot의 강점 (실습 환경)</h3>
+                <ul>
+                    <li><i class="fa-solid fa-play"></i> <strong>빌드 없이 바로 플레이</strong> 가능.</li>
+                    <li><strong>2~3초면 실행</strong>되는 빠른 테스트 구조.</li>
+                    <li>스크립트 수정이 <strong>컴파일 과정 없이 즉시 반영</strong>됨.</li>
+                </ul>
+            </div>
+        </div>
+        <p class="highlight-box center-text">Godot은 <strong>실습 중심의 교육</strong>에서 가장 효율적인 엔진입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 0-3: Godot에서 배운 개념은 그대로 다른 엔진에서도 통한다 -->
+<div class="slide">
+    <div class="content">
+        <h2>Godot에서 배운 개념은 다른 엔진에서도 통한다</h2>
+        <p>엔진은 다르지만, <strong>게임의 근본적인 구조(패턴)</strong>는 대부분 유사합니다. [Image of Game Engine Structure Comparison]</p>
+        <div class="grid-2" style="margin-top: 2rem;">
+            <div class="card">
+                <h3>개념 비교 (Godot vs Other Engines)</h3>
+                <ul>
+                    <li><strong>Scene</strong> ↔ 언리얼의 레벨(Level), 유니티의 Scene</li>
+                    <li><strong>Node 트리 구조</strong> ↔ 유니티 Transform / 언리얼 Actor Component 구조</li>
+                    <li>스프라이트, 콜리전, 애니메이션 시스템은 거의 동일</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>결론</h3>
+                <p>Godot에서 배우는 기초 개념은 유니티, 언리얼에서도 <strong>그대로 활용 가능</strong>합니다.</p>
+                <p style="color: #7ee787;">→ 가벼운 엔진에서 핵심 개념을 익힌 뒤, 더 복잡한 엔진으로 확장하는 방식이 가장 효율적입니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 0-4: 추가적인 선택 이유 (교육용 관점) -->
+<div class="slide">
+    <div class="content">
+        <h2>추가적인 선택 이유 (교육용 관점)</h2>
+        <p>교육자 및 학습자 모두에게 Godot은 명확한 이점을 제공합니다.</p>
+        <div class="card">
+            <ul>
+                <li><i class="fa-solid fa-globe" style="color: #a5d6ff;"></i> <strong>오픈소스 엔진</strong> → 무료, 상업적 사용 제한 및 라이선스 걱정 없음.</li>
+                <li><i class="fa-solid fa-download" style="color: #a5d6ff;"></i> <strong>설치 용량이 작음</strong> → 실습 환경 준비가 매우 쉬움 (단일 실행 파일).</li>
+                <li><i class="fa-solid fa-magnifying-glass" style="color: #a5d6ff;"></i> <strong>에디터 UI 직관적</strong> → 초급자가 Node/Scene 구조를 빠르게 이해할 수 있음.</li>
+                <li>강의 흐름이 <strong>바로 실습</strong>에 집중할 수 있도록 지원합니다.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 0-5: 엔진 비교 (라이선스 비용) -->
+<div class="slide">
+    <div class="content">
+        <h2>엔진 비교 — 라이선스 비용</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Godot</h3>
+                <ul>
+                    <li><strong>라이선스:</strong> MIT 기반(오픈소스) — 무료</li>
+                    <li><strong>상업적 사용:</strong> 비용 없음</li>
+                    <li><strong>장점:</strong> 경량, 빠른 반복, 커뮤니티 중심</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Unity / Unreal</h3>
+                <ul>
+                    <li><strong>Unity:</strong> 개인/학생 무료, 수익 기준 유료 플랜(Plus/Pro/Enterprise)</li>
+                    <li><strong>Unreal:</strong> 무료 사용 가능, 상업적 수익이 일정 기준 초과 시 로열티 발생(엔진 정책에 따라 변경)</li>
+                    <li><strong>주의:</strong> 엔진별 라이선스·서비스 약관이 수시로 변경될 수 있음</li>
+                </ul>
+            </div>
+        </div>
+        <p style="margin-top:1rem;color:#8b949e;">요약: 교육/실습 목적에서 초기 비용·설치 부담이 적은 Godot이 유리 (라이선스 비용 없음).</p>
+        <p style="margin-top:0.5rem;color:#ffb86b;font-size:0.95rem;">참고: 상업적 배포 전 최신 라이선스 정책 확인 필요</p>
+    </div>
+</div>
+
+<!-- Slide 0-6: Godot 다운로드 -->
+<div class="slide">
+    <div class="content center-text">
+        <h2>Godot 엔진 다운로드</h2>
+        <p>공식 사이트에서 최신 안정화(Stable) 버전 다운로드 권장</p>
+        <div style="margin-top:1.5rem;">
+            <a href="https://godotengine.org/download" target="_blank" rel="noopener" style="display:inline-block;background:#7ee787;color:#071018;padding:12px 18px;border-radius:10px;font-weight:700;text-decoration:none;border:2px solid rgba(0,0,0,0.08);">공식 다운로드 페이지로 이동</a>
+        </div>
+        <p style="margin-top:1rem;color:#c9d1d9;">설치 팁: Windows/Mac/Linux용 중 운영체제에 맞는 데스크탑 패키지 선택 → 실행 후 템플릿/에디터 바로 사용 가능</p>
+    </div>
+</div>
+
+<!-- Slide 2: 2D Game Components -->
+<div class="slide">
+    <div class="content">
+        <h2>2D 게임의 기본 구성 요소</h2>
+        <p>2D 게임은 다음 <strong>핵심 요소들의 조합</strong>으로 이루어집니다:</p>
+        <div class="grid-2" style="margin-top: 2rem;">
+            <div class="card center-text">
+                <i class="fa-solid fa-puzzle-piece big-icon"></i>
+                <p><strong>오브젝트 (Node)</strong></p>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-image big-icon"></i>
+                <p><strong>이미지 (Sprite)</strong></p>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-hand-rock big-icon"></i>
+                <p><strong>충돌 (Collision)</strong></p>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-map-pin big-icon"></i>
+                <p><strong>좌표계 (Position)</strong></p>
+            </div>
+        </div>
+        <p style="margin-top: 1rem; text-align: center;">이 모든 것을 담는 그릇이 바로 <strong>씬(Scene)</strong>입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 3: Godot Philosophy -->
+<div class="slide">
+    <div class="content">
+        <h2>Godot 엔진의 설계 철학</h2>
+        <ul>
+            <li>모든 기능이 <strong>Node</strong>라는 단위로 구성됨 (핵심 원칙).</li>
+            <li>Node들이 모여 <strong>Scene</strong>을 이룸.</li>
+            <li>Scene을 조립해 <strong>게임 전체 구조</strong>를 구성 (모듈화).</li>
+            <li>다루기 쉽고 가벼우며, Python과 유사한 <strong>GDScript</strong> 사용.</li>
+        </ul>
+        <p class="highlight-box center-text">Godot의 구조는 <strong>재활용 가능한 조립식 블록</strong>에 기반합니다.</p>
+    </div>
+</div>
+
+<!-- Slide 4: What is a Node? -->
+<div class="slide">
+    <div class="content">
+        <h2>Node란 무엇인가?</h2>
+        <p>Node는 게임을 구성하는 <strong>가장 기본적인 단위</strong>이자 오브젝트입니다.</p>
+        <div class="grid-2">
+            <div>
+                <ul>
+                    <li><strong><code>Sprite Node</code></strong> → 그림을 화면에 표시하는 역할</li>
+                    <li><strong><code>Collision Node</code></strong> → 충돌 영역을 계산하는 역할</li>
+                    <li><strong><code>Audio Node</code></strong> → 소리를 재생하는 역할</li>
+                </ul>
+                <p style="margin-top: 1rem;">Node는 <strong>하나의 역할에 집중</strong>하는 구조로 설계됩니다.</p>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-circle-nodes big-icon"></i>
+                <p>Node는 속성(Properties)과<br>동작(Methods)을 가집니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 5: Scene이란? -->
+<div class="slide">
+    <div class="content">
+        <h2>Scene이란?</h2>
+        <p>Scene은 <strong>여러 Node들의 집합체</strong>이며, <strong>하나의 기능 단위</strong>를 구성합니다.</p>
+        <div class="grid-2" style="margin-top: 2rem;">
+            <div class="card">
+                <h3>💡 이해를 돕는 비유</h3>
+                <p style="font-size: 1.5rem; color: #7ee787; margin-bottom: 1rem;"><strong>Scene = 레고(Lego) 세트 한 박스</strong></p>
+                <ul style="font-size: 1.3rem;">
+                    <li>레고 블록(Node) 여러 개가 조립되어 하나의 완성품이 됨</li>
+                    <li>자동차 레고 세트, 우주선 레고 세트처럼 기능 단위로 묶여 있음</li>
+                    <li>세트를 통째로 다른 장면에서 재사용할 수 있음</li>
+                </ul>
+            </div>
+            <div class="card">
+                <p style="font-size: 1.5rem; color: #a5d6ff; margin-bottom: 1rem;"><strong>또는, Scene = 연극의 무대(Stage)</strong></p>
+                <ul style="font-size: 1.3rem;">
+                    <li>무대 위에 배우, 조명, 소품(Node)이 올라가 하나의 장면을 구성</li>
+                    <li>이 장면(Scene)을 통째로 교체하면 다음 장면으로 넘어가는 흐름을 만들 수 있음</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 5-2: Godot에서의 Scene -->
+<div class="slide">
+    <div class="content">
+        <h2>Godot에서의 Scene</h2>
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3>Scene의 특징</h3>
+            <ul>
+                <li><code>Player Scene</code>, <code>Enemy Scene</code>, <code>UI Scene</code>처럼 <strong>"의미 있는 하나의 단위"</strong>를 묶어 관리</li>
+                <li>Scene은 <strong>재활용 가능</strong>하고 독립적으로 <strong>테스트 가능</strong></li>
+            </ul>
+        </div>
+        <div class="grid-2">
+            <div class="card center-text">
+                <i class="fa-solid fa-cubes big-icon"></i>
+                <p><strong>하나의 씬</strong> = 하나의 화면<br><strong>or</strong><br>하나의 오브젝트</p>
+            </div>
+            <div class="card">
+                <h3>예시</h3>
+                <ul>
+                    <li><code>Player Scene</code> - 플레이어 캐릭터</li>
+                    <li><code>Enemy Scene</code> - 적 캐릭터</li>
+                    <li><code>UI Scene</code> - 사용자 인터페이스</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 6: Scene / Node 관계 예시 -->
+<div class="slide">
+    <div class="content">
+        <h2>Scene / Node 관계 예시</h2>
+        <p>Player Scene 구성 예시입니다. Player 자체가 여러 기능을 가진 복합 오브젝트가 됩니다.</p>
+        <pre>
+<span class="tree-node-item">Player (Node2D)  <span class="comment"># 루트 노드: 위치와 회전 정보를 가짐</span></span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">├─</span> Sprite2D      <span class="comment"># 플레이어 이미지를 표시</span></span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">├─</span> CollisionShape2D <span class="comment"># 충돌 영역 모양 정의</span></span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">└─</span> AnimationPlayer <span class="comment"># 애니메이션 제어</span></span>
+        </pre>
+        <p class="comment" style="margin-top: 1rem;">루트 노드에 GDScript를 연결하여 전체 동작을 제어합니다.</p>
+    </div>
+</div>
+
+<!-- Slide 7: 부모–자식 구조 이해 -->
+<div class="slide">
+    <div class="content">
+        <h2>부모–자식 구조 이해</h2>
+        <p>Node는 <strong>트리(Tree) 형태</strong>로 구성됩니다. 이것이 Godot 구조 이해의 핵심입니다.</p>
+        <div class="grid-2">
+            <div>
+                <ul>
+                    <li><strong>부모 Node</strong>가 이동하거나 회전하면, <strong>자식 Node</strong>도 같이 이동/회전합니다.</li>
+                    <li>자식 Node는 부모의 기능을 <strong>보완</strong>하거나 시각적 요소를 담당합니다.</li>
+                </ul>
+                <p style="margin-top: 1rem;">예: 총(자식)은 캐릭터(부모)가 움직이는 대로 따라갑니다.</p>
+            </div>
+            <div class="highlight-box center-text">
+                <i class="fa-solid fa-sitemap big-icon"></i>
+                <p>Node 트리는 <strong>조립식 구조</strong>입니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 8: 트리 구조 예시 화면 -->
+<div class="slide">
+    <div class="content">
+        <h2>트리 구조 예시 화면</h2>
+        <p>전체 게임 화면(World)이 어떻게 구성되는지 나타내는 트리입니다.</p>
+        <pre style="font-size: 1.4rem;">
+<span class="tree-node-item">World (Node)</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">├─</span> Player (CharacterBody2D)</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">│    ├─</span> Sprite2D</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">│    └─</span> CollisionShape2D</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">└─</span> Enemy (Area2D)</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">     ├─</span> Sprite2D</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">     └─</span> CollisionShape2D</span>
+        </pre>
+            </div>
+</div>
+
+<!-- Slide 9: Node 종류 미리 보기 -->
+<div class="slide">
+    <div class="content">
+        <h2>Node 종류 미리 보기</h2>
+        <p>자주 사용되는 Node들을 미리 살펴봅시다.</p>
+        <div class="grid-2">
+            <div class="card">
+                <i class="fa-solid fa-arrows-up-down-left-right" style="color:#7ee787;"></i> <strong>Node2D:</strong> 2D 오브젝트의 "기본" (위치, 회전, 스케일 정보)
+                <br><i class="fa-solid fa-image" style="color:#7ee787;"></i> <strong>Sprite2D:</strong> 화면에 "이미지 표시"
+                <br><i class="fa-solid fa-box-open" style="color:#7ee787;"></i> <strong>Area2D:</strong> "충돌 감지"용 (관통 가능)
+            </div>
+            <div class="card">
+                <i class="fa-solid fa-chess-knight" style="color:#a5d6ff;"></i> <strong>RigidBody2D:</strong> "물리 기반" 오브젝트 (중력, 마찰 등)
+                <br><i class="fa-solid fa-tag" style="color:#a5d6ff;"></i> <strong>Label:</strong> "텍스트 표시"용 (UI)
+                <br><i class="fa-solid fa-hourglass-half" style="color:#a5d6ff;"></i> <strong>Timer:</strong> 일정 시간 후 "이벤트 실행"
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 10: Godot 좌표계 이해 -->
+<div class="slide">
+    <div class="content">
+        <h2>Godot 좌표계 이해</h2>
+        <p>Godot을 포함한 대부분의 2D 게임 엔진은 독특한 좌표계를 사용합니다.</p>
+        <div class="grid-2">
+            <div class="card">
+                <ul>
+                    <li>좌표 <strong>(0, 0)</strong>은 화면 <strong>좌측 상단</strong>입니다.</li>
+                    <li><strong>X 증가</strong> → 오른쪽으로 이동</li>
+                    <li><strong>Y 증가</strong> → <strong>아래</strong>로 이동 (일반 수학과 다름!)</li>
+                    <li><strong>회전</strong>은 <strong>라디안 단위</strong> 사용 (양수는 시계 방향)</li>
+                </ul>
+            </div>
+            <div class="center-text" style="font-size: 1.1rem; color: #8b949e;">
+                <div style="display:flex;gap:1.5rem;align-items:center;justify-content:center;">
+                    <!-- SVG diagram: origin top-left, +X right, +Y down -->
+                    <svg width="360" height="240" viewBox="0 0 360 240" aria-hidden="true" role="img">
+                        <defs>
+                            <linearGradient id="g" x1="0" x2="1">
+                                <stop offset="0" stop-color="#0f1720" stop-opacity="0" />
+                            </linearGradient>
+                        </defs>
+                        <!-- background grid -->
+                        <rect x="0" y="0" width="360" height="240" fill="#0d1117" />
+                        <g stroke="#25303a" stroke-width="1">
+                            <!-- vertical grid lines -->
+                            ${''/* placeholder -- will be invisible in HTML but kept for structure */}
+                        </g>
+                        <!-- axes -->
+                        <line x1="30" y1="30" x2="330" y2="30" stroke="#7ee787" stroke-width="2" marker-end="url(#arrowX)" />
+                        <line x1="30" y1="30" x2="30" y2="210" stroke="#7ee787" stroke-width="2" marker-end="url(#arrowY)" />
+                        <defs>
+                            <marker id="arrowX" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                                <path d="M0 0 L8 4 L0 8 z" fill="#7ee787" />
+                            </marker>
+                            <marker id="arrowY" markerWidth="8" markerHeight="8" refX="4" refY="6" orient="auto">
+                                <path d="M0 0 L8 4 L0 8 z" fill="#7ee787" />
+                            </marker>
+                        </defs>
+                        <!-- origin label -->
+                        <circle cx="30" cy="30" r="4" fill="#9ad1ff" />
+                        <text x="34" y="26" fill="#ffffff" font-size="14">(0, 0)</text>
+                        <!-- sample point and label -->
+                        <circle cx="150" cy="110" r="5" fill="#ffb86b" />
+                        <text x="160" y="106" fill="#ffb86b" font-size="13">(120, 80)</text>
+                        <!-- +X label -->
+                        <text x="320" y="24" fill="#7ee787" font-size="14" text-anchor="end">+X →</text>
+                        <!-- +Y label -->
+                        <text x="22" y="205" fill="#7ee787" font-size="14" text-anchor="end">↓ +Y</text>
+                        <!-- optional grid lines for visual aid -->
+                        <g stroke="#1b2228" stroke-width="0.6">
+                            <!-- horizontal lines -->
+                            <path d="M30 60 H330" />
+                            <path d="M30 90 H330" />
+                            <path d="M30 120 H330" />
+                            <path d="M30 150 H330" />
+                            <path d="M30 180 H330" />
+                            <!-- vertical lines -->
+                            <path d="M60 30 V210" />
+                            <path d="M90 30 V210" />
+                            <path d="M120 30 V210" />
+                            <path d="M150 30 V210" />
+                            <path d="M180 30 V210" />
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 11: Sprite 설정 -->
+<div class="slide">
+    <div class="content">
+        <h2>Sprite 설정</h2>
+        <p><code>Sprite2D</code> Node는 화면에 그림을 그리는 역할을 합니다. 주요 속성:</p>
+        <div class="grid-2">
+            <div class="card">
+                <h3>주요 속성 (Properties)</h3>
+                <ul>
+                    <li><strong>Texture:</strong> 표시할 이미지 파일 (필수).</li>
+                    <li><strong>Offset:</strong> 이미지의 중심점 조정.</li>
+                    <li><strong>Modulate:</strong> Sprite의 색상을 변경 (필터 효과).</li>
+                    <li><strong>Flip H / V:</strong> 이미지를 가로/세로로 반전.</li>
+                </ul>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-palette big-icon"></i>
+                <p>Sprite는 시각적인 정보를 담당하며, <strong>충돌 영역은 아닙니다!</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 12: Sprite 예제 -->
+<div class="slide">
+    <div class="content">
+        <h2>Sprite 예제: 플레이어 이미지 띄우기</h2>
+        <p>가장 기본적인 씬 구성 단계입니다.</p>
+        <ol>
+            <li><strong>Player (CharacterBody2D)</strong> 씬 생성.</li>
+            <li>루트 Node에 <strong>Sprite2D</strong> 추가 (자식으로).</li>
+            <li>Sprite2D의 <strong>Texture 속성</strong>에 이미지 파일 드래그.</li>
+            <li>Scene 뷰에서 위치 조정.</li>
+        </ol>
+        <pre><code><span class="tree-node-item">Player</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">└─</span> Sprite2D (Texture: player.png)</span>
+        </pre>
+    </div>
+</div>
+
+<!-- Slide 13: Collision Node 이해 -->
+<div class="slide">
+    <div class="content">
+        <h2>Collision Node 이해</h2>
+        <p>게임에서 충돌을 감지하거나 물리적인 상호작용을 처리할 때 사용합니다.</p>
+        <div class="grid-2">
+            <div>
+                <ul>
+                    <li><strong><code>CollisionShape2D</code>:</strong> 충돌 영역의 <strong>형태(Shape)</strong> 정의.</li>
+                    <li><strong><code>Area2D</code>:</strong> 충돌 <strong>감지</strong>에 사용 (트리거 역할).</li>
+                    <li><strong><code>RigidBody2D</code> / <code>CharacterBody2D</code>:</strong> 물리 <strong>계산</strong>에 사용.</li>
+                </ul>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-shapes big-icon"></i>
+                <p>형태(Shape)는 원, 사각형, 다각형 등<br>다양한 형태가 가능합니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 14: Collision 예제 -->
+<div class="slide">
+    <div class="content">
+        <h2>Collision 예제: 플레이어 충돌 영역</h2>
+        <p>플레이어가 충돌을 인식하게 하려면 충돌 영역을 반드시 추가해야 합니다.</p>
+        <pre>
+<span class="tree-node-item">Player (CharacterBody2D)</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">├─</span> Sprite2D</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">└─</span> CollisionShape2D  <span class="comment"># 플레이어의 크기에 맞는 Shape 설정</span></span>
+<span class="tree-indent tree-node-item">    <span class="tree-symbol">└─</span> (Shape: RectangleShape2D)</span>
+        </pre>
+        <p style="margin-top: 1rem; color: #8b949e;">→ 이 씬을 게임 월드에 배치하면 다른 오브젝트와 충돌 감지가 가능해집니다.</p>
+    </div>
+</div>
+
+<!-- Slide 15: Godot 스크립트: GDScript 소개 -->
+<div class="slide">
+    <div class="content">
+        <h2>Godot 스크립트: GDScript 소개</h2>
+        <p>GDScript는 Godot 엔진을 위해 설계된 <strong>전용 스크립트 언어</strong>입니다. Python과 매우 유사합니다.</p>
+        <div class="card">
+            <h3>GDScript 특징</h3>
+            <ul>
+                <li><strong>들여쓰기 기반 문법:</strong> 가독성이 높습니다.</li>
+                <li><strong>타입 선택 자유:</strong> 동적/정적 타이핑 선택 가능.</li>
+                <li><strong>Node 조작에 최적화:</strong> 엔진과 완벽하게 통합됨.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 16: GDScript vs Python -->
+<div class="slide">
+    <div class="content">
+        <h2>GDScript vs Python</h2>
+        <p>Python 경험이 있는 학생들에게 GDScript는 매우 쉽게 느껴집니다.</p>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Python</h3>
+                <pre><code><span class="comment"># 함수 정의</span>
+def add(a, b):
+    return a + b</code></pre>
+            </div>
+            <div class="card">
+                <h3>GDScript</h3>
+                <pre><code><span class="comment"># 함수 정의 (func 키워드)</span>
+func add(a, b):
+    return a + b</code></pre>
+            </div>
+        </div>
+        <p class="center-text" style="margin-top: 1rem;">문법이 매우 비슷하여 진입 장벽이 낮습니다.</p>
+    </div>
+</div>
+
+<!-- Slide 17: Node에 스크립트 붙이기 -->
+<div class="slide">
+    <div class="content">
+        <h2>Node에 스크립트 붙이기 (Attach Script)</h2>
+        <p>스크립트는 Node의 동작(로직)을 담당하며, Node에 연결되어야 실행됩니다.</p>
+        <ol>
+            <li>씬의 <strong>특정 Node</strong> (예: Player 루트 노드)를 선택합니다.</li>
+            <li>인터페이스에서 <strong>Attach Script</strong> 버튼을 클릭합니다.</li>
+            <li>자동으로 <strong><code>.gd</code> 파일</strong>이 생성되고 Node와 연결됩니다.</li>
+        </ol>
+        <p class="highlight-box center-text">스크립트가 연결된 Node는 이제 <strong>움직임</strong>을 가집니다.</p>
+    </div>
+</div>
+
+<!-- Slide 18: 간단한 이동 코드 예제 -->
+<div class="slide">
+    <div class="content">
+        <h2>간단한 이동 코드 예제</h2>
+        <p>오른쪽 방향키를 눌렀을 때 플레이어를 이동시키는 코드입니다.</p>
+        <pre><code>extends Node2D
+
+var speed = 200.0 <span class="comment"># 초당 200 픽셀 이동 속도</span>
+
+func _process(delta): <span class="comment"># 매 프레임 호출되는 함수 (delta는 지난 프레임과의 시간차)</span>
+    if Input.is_action_pressed("move_right"): <span class="comment"># 'move_right' 액션이 눌려있는지 확인</span>
+        position.x += speed * delta <span class="comment"># X 좌표를 업데이트</span>
+</code></pre>
+        <p style="margin-top: 1rem;">→ <code>_process()</code> 안에서 이동을 처리하여 <strong>매 프레임</strong> 플레이어의 위치를 갱신합니다.</p>
+    </div>
+</div>
+
+<!-- Slide 19: 입력 매핑(Input Map) -->
+<div class="slide">
+    <div class="content">
+        <h2>입력 매핑 (Input Map)</h2>
+        <p>Godot에서는 키보드/마우스 키 값이 아닌 <strong>액션 이름</strong>을 사용합니다.</p>
+        <div class="grid-2">
+            <div class="card">
+                <h3>액션 이름 예시</h3>
+                <ul>
+                    <li><code>move_right</code> (오른쪽 이동)</li>
+                    <li><code>jump</code> (점프)</li>
+                    <li><code>attack</code> (공격)</li>
+                </ul>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-keyboard big-icon"></i>
+                <p><strong>프로젝트 설정</strong>에서<br>원하는 키(예: D, Right Arrow)에<br>액션 이름을 <strong>매핑</strong>할 수 있습니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 20: 이벤트 처리: 충돌 감지 -->
+<div class="slide">
+    <div class="content">
+        <h2>이벤트 처리: 충돌 감지</h2>
+        <p><code>Area2D</code>나 <code>CharacterBody2D</code>에서 충돌이 발생하면 함수가 호출됩니다.</p>
+        <pre><code><span class="comment"># Area2D에 'body_entered' 시그널을 연결하여 생성된 함수</span>
+func _on_Area2D_body_entered(body):
+    print("충돌 감지! 충돌한 오브젝트:", body.name)
+    body.queue_free() <span class="comment"># 충돌한 오브젝트(예: 아이템)를 제거</span>
+</code></pre>
+        <p style="margin-top: 1rem;">→ 이 함수는 <strong>Signal 연결</strong> 후 자동으로 호출되는 <strong>이벤트 함수</strong>입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 21: Signal 시스템 이해 -->
+<div class="slide">
+    <div class="content">
+        <h2>Signal 시스템 이해</h2>
+        <p>Signal은 <strong>Node 간 이벤트 전송</strong>을 위한 Godot의 <strong>핵심 기능</strong>입니다.</p>
+        <div class="grid-2">
+            <div>
+                <ul>
+                    <li>버튼 클릭 (`pressed`)</li>
+                    <li>충돌 발생 (`body_entered`)</li>
+                    <li>애니메이션 종료 (`animation_finished`)</li>
+                </ul>
+            </div>
+            <div class="highlight-box center-text">
+                <i class="fa-solid fa-bell big-icon"></i>
+                <p>Signal은 <strong>Observer 패턴</strong> 기반으로 동작합니다.<br><strong>누가 나에게 무슨 일이 일어났다고 알려주세요.</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 22: Signal 연결 방법 -->
+<div class="slide">
+    <div class="content">
+        <h2>Signal 연결 방법</h2>
+        <p>GUI를 통해 쉽고 안전하게 이벤트를 연결할 수 있습니다.</p>
+        <ol>
+            <li>이벤트를 발생시킬 <strong>Node</strong> (예: Button)를 선택합니다.</li>
+            <li>Inspector 옆의 <strong>Node 탭</strong> (Signals 패널)을 엽니다.</li>
+            <li>원하는 시그널 (예: `pressed`)을 선택 후 <strong>Connect</strong> 버튼을 누릅니다.</li>
+            <li>스크립트에 <strong>자동으로 함수가 생성</strong>됩니다.</li>
+        </ol>
+    </div>
+</div>
+
+<!-- Slide 23: 예제: 버튼 클릭 이벤트 -->
+<div class="slide">
+    <div class="content">
+        <h2>예제: 버튼 클릭 이벤트</h2>
+        <p>UI Node인 <code>Button</code>에 스크립트를 연결하여 `pressed` 시그널을 처리합니다.</p>
+        <pre><code>func _on_Button_pressed():
+    print("버튼 눌림! 게임 시작!")
+    get_tree().change_scene_to_file("res://game_world.tscn") <span class="comment"># 씬 전환</span>
+</code></pre>
+        <p style="margin-top: 1rem;">→ UI도 Node 기반에서 동일한 Signal 방식으로 작동합니다.</p>
+    </div>
+</div>
+
+<!-- Slide 24: Timer 이벤트 활용 -->
+<div class="slide">
+    <div class="content">
+        <h2>Timer 이벤트 활용</h2>
+        <p><code>Timer</code> Node는 일정 시간 후 이벤트를 발생시켜 줍니다. (쿨타임, 지연 처리 등)</p>
+        <pre><code>func _ready():
+    $Timer.start() <span class="comment"># 게임 시작 시 타이머 시작</span>
+
+<span class="comment"># 'timeout' 시그널 연결</span>
+func _on_Timer_timeout():
+    print("타이머 종료! 적 생성!")
+    <span class="comment"># 적 생성 로직 호출</span>
+</code></pre>
+        <p style="margin-top: 1rem;">→ 공격 쿨타임, 적 생성 주기 등 <strong>시간 기반 이벤트</strong>에 유용합니다.</p>
+    </div>
+</div>
+
+<!-- Slide 25: Node 찾기(get_node) -->
+<div class="slide">
+    <div class="content">
+        <h2>Node 찾기 (get_node)</h2>
+        <p>스크립트에서 다른 Node를 제어하기 위해 트리에서 Node를 찾아야 합니다.</p>
+        <pre><code><span class="comment"># 1. 상대 경로로 찾기 (가장 흔함)</span>
+var enemy = get_node("../Enemy")
+
+<span class="comment"># 2. 절대 경로로 찾기 (루트부터 시작)</span>
+var ui_label = get_node("/root/GameWorld/CanvasLayer/ScoreLabel")
+
+<span class="comment"># 3. $ 기호를 사용하여 쉽게 접근 (경로가 짧을 때 유용)</span>
+$Enemy.hide() <span class="comment"># 자식 노드라면 간단하게 $ 기호 사용 가능</span>
+</code></pre>
+    </div>
+</div>
+
+<!-- Slide 26: Node 생명주기(Lifecycle) -->
+<div class="slide">
+    <div class="content">
+        <h2>Node 생명주기 (Lifecycle)</h2>
+        <p>Node가 생성되고, 업데이트되고, 삭제되는 과정에서 엔진이 호출하는 콜백 함수들입니다.</p>
+        <div class="card">
+            <ul>
+                <li><strong><code>_ready()</code>:</strong> Node 준비가 끝나고 <strong>씬에 추가되었을 때</strong> (딱 한 번).</li>
+                <li><strong><code>_process(delta)</code>:</strong> <strong>매 프레임</strong> 실행 (렌더링 직전).</li>
+                <li><strong><code>_physics_process(delta)</code>:</strong> <strong>물리 프레임</strong> 실행 (물리 계산 전용, _process와 분리됨).</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 27: 예제: 시작 시 초기화 -->
+<div class="slide">
+    <div class="content">
+        <h2>예제: 시작 시 초기화</h2>
+        <p><code>_ready()</code> 함수는 변수 초기화, 상태 설정 등 <strong>한 번만 필요한 로직</strong>에 사용합니다.</p>
+        <pre><code>extends CharacterBody2D
+
+var max_hp = 100
+var current_hp
+
+func _ready():
+    current_hp = max_hp <span class="comment"># HP 초기화</span>
+    print("플레이어 로드 완료! 초기 HP:", current_hp)
+</code></pre>
+    </div>
+</div>
+
+<!-- Slide 28: 예제: 프레임 기반 회전 -->
+<div class="slide">
+    <div class="content">
+        <h2>예제: 프레임 기반 회전</h2>
+        <p><code>_process(delta)</code>를 이용해 매 프레임마다 회전시켜 간단한 애니메이션 효과를 낼 수 있습니다.</p>
+        <pre><code>extends Node2D
+
+var rotation_speed = 1.0 <span class="comment"># 초당 1 라디안 회전 (약 57도)</span>
+
+func _process(delta):
+    rotation += rotation_speed * delta <span class="comment"># 델타 값을 곱해 프레임 속도와 관계없이 일정한 속도로 회전</span>
+</code></pre>
+        <p style="margin-top: 1rem;">→ `delta`를 곱하면 어떤 컴퓨터에서든 동일한 속도로 움직입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 29: 지금까지 구성된 Player Scene -->
+<div class="slide">
+    <div class="content">
+        <h2>지금까지 구성된 Player Scene</h2>
+        <p>다음 실습에서 만들게 될 Player Scene의 최종 구조 요약입니다.</p>
+        <pre>
+<span class="tree-node-item">Player (CharacterBody2D)</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">├─</span> Sprite2D</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">├─</span> CollisionShape2D</span>
+<span class="tree-indent tree-node-item"><span class="tree-symbol">└─</span> Script (Player.gd) <span class="comment"># 이동, 충돌 처리, 상태 관리</span></span>
+        </pre>
+        <p class="highlight-box center-text">이 하나의 Scene 파일(`Player.tscn`)을 재활용하여 여러 게임 월드에 배치할 수 있습니다.</p>
+    </div>
+</div>
+
+<!-- Slide 30: 다음 교시 예고 -->
+<div class="slide">
+    <div class="content center-text">
+        <h2>다음 교시 예고</h2>
+        <h1 style="color: #4ABFBB; margin: 2rem 0;">3교시: Godot 실습 — 플레이어 이동 및 상호작용 만들기</h1>
+        <div class="grid-2" style="text-align: left; margin-top: 2rem;">
+            <div class="card">
+                <h3>주요 실습 내용</h3>
+                <ul>
+                    <li>실제 GDScript 코드 작성 및 디버깅</li>
+                    <li>키보드 입력을 받아 플레이어 움직이기</li>
+                    <li>충돌 구현 및 이벤트 처리 (아이템 획득/적 피격)</li>
+                    <li>화면 이동 및 적 배치 환경 구성</li>
+                </ul>
+            </div>
+            <div style="font-size: 1.2rem; color: #8b949e;">
+                <p>오늘 배운 <strong>Node, Scene, GDScript</strong> 개념을 바탕으로, 직접 게임 오브젝트를 만들어 움직여보는 시간을 가집니다!</p>
+            </div>
+        </div>
+        <p style="margin-top: 3rem; font-weight: bold;">2교시 종료</p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const slides = document.querySelectorAll('.slide');
+        let currentSlideIndex = 0;
+
+        // 초기 슬라이드 설정
+        if (slides.length > 0) {
+            // 모든 슬라이드를 숨기고 첫 번째 슬라이드만 활성화
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlideIndex].classList.add('active');
+        }
+
+        function showSlide(index) {
+            // 슬라이드 배열의 범위를 벗어나지 않도록 방지
+            if (index < 0) {
+                index = 0;
+            }
+            if (index >= slides.length) {
+                index = slides.length - 1;
+            }
+
+            if (index !== currentSlideIndex) {
+                // 이전 슬라이드 비활성화
+                slides[currentSlideIndex].classList.remove('active');
+                
+                // 새 인덱스로 업데이트
+                currentSlideIndex = index;
+                
+                // 새 슬라이드 활성화
+                slides[currentSlideIndex].classList.add('active');
+            }
+        }
+
+        // Expose showSlide for parent control and listen to postMessage
+        try{
+            window.showSlide = showSlide;
+        }catch(e){/* ignore */}
+
+        window.addEventListener('message', (ev) => {
+            try{
+                const msg = (typeof ev.data === 'string') ? JSON.parse(ev.data) : ev.data;
+                if(msg && msg.type === 'gotoSlide' && typeof msg.index === 'number'){
+                    showSlide(msg.index);
+                }
+            }catch(err){ }
+        });
+
+        // 키보드 이벤트 리스너
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowRight' || event.key === ' ' || event.key === 'Enter') {
+                // 오른쪽 화살표, 스페이스바, 엔터: 다음 슬라이드
+                showSlide(currentSlideIndex + 1);
+            } else if (event.key === 'ArrowLeft') {
+                // 왼쪽 화살표: 이전 슬라이드
+                showSlide(currentSlideIndex - 1);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

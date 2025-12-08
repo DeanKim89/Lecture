@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1교시: 게임 프로그래밍 이해하기</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* CORE THEME & RESET */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: #0d1117; /* GitHub Dark Dimmed 느낌 */
+            color: #e6edf3;
+            font-family: 'Noto Sans KR', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* 스크롤 방지 */
+        }
+
+        /* SLIDE CONTAINER - KEYBOARD MODE STYLES */
+        .slide {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute; /* 모든 슬라이드를 겹쳐 놓음 */
+            top: 0;
+            left: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease; /* 전환 효과 */
+            border-bottom: 1px solid #30363d;
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* CONTENT WRAPPER */
+        .content {
+            width: 1200px;
+            max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        /* BACKGROUND DECORATION */
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, rgba(46, 160, 67, 0.05) 0%, rgba(0,0,0,0) 70%); /* Green accent */
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        /* TYPOGRAPHY */
+        h1 { font-size: 3.5rem; font-weight: 700; margin-bottom: 1rem; line-height: 1.2; }
+        h2 { font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem; color: #7ee787; border-left: 5px solid #7ee787; padding-left: 1rem; }
+        h3 { font-size: 1.8rem; margin-bottom: 1rem; color: #a5d6ff; }
+        p, li { font-size: 1.4rem; line-height: 1.6; color: #c9d1d9; margin-bottom: 0.8rem; }
+        strong { color: #fff; font-weight: 700; }
+        
+        /* CODE BLOCK STYLE */
+        pre {
+            background: #161b22;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            color: #e6edf3;
+        }
+        code { font-family: 'JetBrains Mono', monospace; color: #ff7b72; }
+        .comment { color: #8b949e; }
+
+        /* LISTS */
+        ul { list-style: none; padding-left: 1rem; }
+        ul li::before {
+            content: "\f054"; /* FontAwesome Chevron Right */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: #7ee787;
+            display: inline-block;
+            width: 1.5em;
+            margin-left: -1.5em;
+        }
+
+        /* LAYOUTS */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+        .card { background: #21262d; padding: 2rem; border-radius: 12px; border: 1px solid #30363d; height: 100%; }
+        .center-text { text-align: center; }
+        
+        /* VISUAL ELEMENTS */
+        .big-icon { font-size: 4rem; color: #7ee787; margin-bottom: 1rem; }
+        .highlight-box { border: 2px solid #7ee787; padding: 2rem; border-radius: 12px; text-align: center; margin-top: 2rem; }
+
+        /* TREE DIAGRAM */
+        .tree-node { margin-left: 20px; border-left: 2px solid #30363d; padding-left: 20px; position: relative; }
+        .tree-node::before { content: ''; position: absolute; left: 0; top: 15px; width: 20px; height: 2px; background: #30363d; }
+        .tree-item { background: #161b22; padding: 10px; margin-bottom: 10px; border-radius: 6px; display: inline-block; border: 1px solid #30363d; font-family: 'JetBrains Mono'; }
+
+        /* Slide 1-1 (강사 소개) - Link styles: higher contrast, clear hover/active/focus states */
+        .slide--intro a {
+            color: #58a6ff; /* readable bright blue */
+            text-decoration: none;
+            border-bottom: 2px solid rgba(88,166,255,0.12);
+            padding-bottom: 2px;
+            transition: color 150ms ease, border-color 150ms ease, transform 100ms ease, box-shadow 150ms ease;
+        }
+        .slide--intro a:hover,
+        .slide--intro a:focus {
+            color: #9ad1ff; /* lighter on hover */
+            border-color: rgba(154,209,255,0.35);
+            transform: translateY(-2px);
+            outline: none;
+            box-shadow: 0 6px 20px rgba(90,160,255,0.06);
+        }
+        .slide--intro a:active {
+            color: #1f6feb; /* slightly darker when clicked */
+            transform: translateY(0);
+        }
+        .slide--intro a:visited {
+            color: #6fb0ff;
+        }
+        /* Make links inside cards slightly bolder for emphasis */
+        .slide--intro .card a { font-weight: 600; }
+
+    </style>
+</head>
+<body>
+
+<!-- Slide 1: Title -->
+<div class="slide">
+    <div class="content center-text">
+        <p style="font-size: 1.5rem; color: #7ee787; font-weight: bold; letter-spacing: 2px; margin-bottom: 20px;">LECTURE 01</p>
+        <h1>게임 프로그래밍 이해하기</h1>
+        <h3 style="color: #8b949e; font-weight: 400;">실시간(Real-time) 소프트웨어의 세계</h3>
+        <p style="margin-top: 2rem;">게임이 "왜" 움직이고 "어떻게" 작동하는지<br>그 내부 원리를 파헤쳐 봅니다.</p>
+    </div>
+</div>
+
+<!-- Slide 1-1: Introduction-->
+<div class="slide slide--intro">
+    <div class="content">
+        <h2>강사 소개</h2>
+        <div class ="grid-2" style="align-items: center;">
+            <div class="card" style="display: inline-block; text-align: left; max-width: 600px;">
+                <p><strong>이름:</strong> 김청운</p>
+                <p><strong>경력:</strong> 前 NC 게임 클라이언트 프로그래머<br>現 알트나인 게임 클라이언트 프로그래머</p>
+                <p><strong>참여 프로젝트:</strong> <a href="https://lineagem.plaync.com/?redirect=false">리니지M</a>, <a href="https://sol.netmarble.com">SOL:Enchant</a></p>
+
+            </div>
+            <div class="card" style="display: inline-block; text-align: center; max-width: 300px; margin-left: 2rem;">
+                <h3>알트나인</h3>
+                <img src="https://static.wixstatic.com/media/16ce3a_ffa89ca1a13c4c088458fd9be23f64c0~mv2.png/v1/crop/x_748,y_406,w_1999,h_829/fill/w_123,h_51,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/final_Alt9_Ci_Black.png" alt="AltNine Logo" style="width: 150px; margin-top: 1rem;">
+                <h3>NC</h3>
+                <img src="https://cdn.gametoc.co.kr/news/photo/202001/53810_104384_126.jpg" alt="AltNine Logo" style="width: 150px; margin-top: 1rem;">
+            </div>
+        </div> 
+    </div>
+</div>
+
+<!-- Slide 1-2: ICPC/Algorithm Experience (New Slide) -->
+<div class="slide">
+    <div class="content">
+        <h2>알고리즘 경험의 가치</h2>
+        <div class="card" style="max-width: 800px; margin: 0 auto; padding: 40px; text-align: left;">
+            <h3>PS에서 게임 개발로 (공통의 고민)</h3>
+            <p style="margin-bottom: 20px;">저 역시 여러분처럼 정보 올림피아드와 비슷한 PS(문제 해결) 위주로 프로그래밍을 시작했습니다. 그 지식이 이 화려한 게임 화면을 만드는 데 어떻게 쓰일지 처음엔 많이 고민했었습니다.</p>
+            <p style="margin-bottom: 20px; color: #7ee787;">하지만 결론적으로, 알고리즘과 자료구조는 게임 시스템의 "뼈대"이자 "핵심 논리"입니다. 여러분의 경험이 가장 빛을 발할 수 있습니다.</p>
+            <div style="height: 300px; width: 100%; display: flex; align-items: center; justify-content: center; background: #0d1117; border: 1px solid #30363d; border-radius: 8px;">
+                <img src="./icpc_achievement.png" alt="ACM ICPC 또는 알고리즘 대회 입상 이미지" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 2: Goals -->
+<div class="slide">
+    <div class="content">
+        <h2>오늘 학습 목표</h2>
+        <ul>
+            <li>게임 프로그램의 구조와 작동 원리 이해</li>
+            <li>실시간 처리(Real-time Processing) 개념 학습</li>
+            <li>기본적인 게임 상태(State) 다루기</li>
+            <li>간단한 예제로 동작 흐름 확인</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Slide 3: What is Game Programming? -->
+<div class="slide">
+    <div class="content">
+        <h2>게임 프로그래밍이란?</h2>
+        <div class="grid-2">
+            <div>
+                <ul>
+                    <li>지속적으로 변하는 상황을 <strong>실시간으로 계산</strong>하는 프로그램</li>
+                    <li>사용자 입력, 물리, AI, 사운드 등 여러 시스템이 동시에 동작</li>
+                    <li>매 프레임 동안 새로운 화면을 출력하는 구조</li>
+                </ul>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-gamepad big-icon"></i>
+                <p><strong>"Calculated Chaos"</strong><br>수많은 연산이 1초에 60번 모여<br>하나의 경험을 만듭니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 4: Difference -->
+<div class="slide">
+    <div class="content">
+        <h2>일반 프로그램 vs 게임</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>일반 프로그램 (App)</h3>
+                <p><i class="fa-solid fa-mouse-pointer"></i> <strong>이벤트 기반</strong></p>
+                <ul>
+                    <li>클릭할 때만 동작합니다.</li>
+                    <li>가만히 있으면 CPU 사용량이 거의 없습니다.</li>
+                    <li>변화가 적습니다.</li>
+                </ul>
+            </div>
+            <div class="card" style="border-color: #7ee787;">
+                <h3>게임 프로그램</h3>
+                <p><i class="fa-solid fa-rotate"></i> <strong>무한 루프</strong></p>
+                <ul>
+                    <li>초당 30~60번 이상 상태를 갱신합니다.</li>
+                    <li>입력이 없어도 몬스터는 움직여야 합니다.</li>
+                    <li>입력·충돌·애니메이션이 계속 계산됩니다.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 5: Game Loop -->
+<div class="slide">
+    <div class="content">
+        <h2>핵심: 게임 루프 (Game Loop)</h2>
+        <p>게임은 아래 구조를 끊임없이 반복합니다.</p>
+        <div class="highlight-box" style="display: flex; justify-content: space-around; align-items: center;">
+            <div>
+                <i class="fa-solid fa-keyboard big-icon"></i><br><strong>1. 입력 (Input)</strong>
+            </div>
+            <div style="font-size: 2rem; color: #30363d;"><i class="fa-solid fa-arrow-right"></i></div>
+            <div>
+                <i class="fa-solid fa-microchip big-icon"></i><br><strong>2. 업데이트 (State)</strong>
+            </div>
+            <div style="font-size: 2rem; color: #30363d;"><i class="fa-solid fa-arrow-right"></i></div>
+            <div>
+                <i class="fa-solid fa-desktop big-icon"></i><br><strong>3. 출력 (Render)</strong>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 1rem; color: #8b949e;">이 흐름이 초당 수십 회 반복됩니다.</p>
+    </div>
+</div>
+
+<!-- Slide 6: Loop Example -->
+<div class="slide">
+    <div class="content">
+        <h2>간단한 예제 (텍스트 기반)</h2>
+        <p>코드로 보면 매우 단순한 구조입니다.</p>
+        <pre><code>while game_running:
+    <span class="comment"># 1. 입력 받기</span>
+    key = input()
+
+    <span class="comment"># 2. 상태 업데이트</span>
+    player.update(key)
+
+    <span class="comment"># 3. 화면 그리기</span>
+    render(player)</code></pre>
+        <p class="center-text">단순해 보이는 이 루프가 실제 모든 게임의 <strong>근본 구조</strong>입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 7: Game Objects -->
+<div class="slide">
+    <div class="content">
+        <h2>게임 오브젝트 (Game Object)</h2>
+        <p>게임 월드에 등장하는 모든 요소를 말합니다.</p>
+        <div class="grid-2">
+            <div>
+                <ul>
+                    <li>플레이어 (Player)</li>
+                    <li>적 몬스터 (Enemy)</li>
+                    <li>아이템 (Item)</li>
+                    <li>UI 버튼 (HUD)</li>
+                </ul>
+            </div>
+            <div class="card">
+                <p><strong>특징:</strong></p>
+                <p>각 오브젝트는 고유한<br><span style="color:#7ee787">1. 상태 (Data)</span>와<br><span style="color:#79c0ff">2. 행동 (Method)</span>을 가집니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 8: State -->
+<div class="slide">
+    <div class="content">
+        <h2>상태(State)의 의미</h2>
+        <p>플레이어라는 오브젝트를 데이터로 표현한다면?</p>
+        <div class="card">
+            <ul>
+                <li><strong>위치 (Position):</strong> x=100, y=50</li>
+                <li><strong>체력 (HP):</strong> 100 / 100</li>
+                <li><strong>속도 (Speed):</strong> 5.0</li>
+                <li><strong>현재 행동 (Action):</strong> Jumping / Walking / Idle</li>
+            </ul>
+        </div>
+        <p style="margin-top: 1.5rem; text-align: center;">이 <strong>'상태'</strong> 데이터들이 매 프레임 갱신되는 것이 게임입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 9: Events -->
+<div class="slide">
+    <div class="content">
+        <h2>이벤트(Event)란?</h2>
+        <p>게임 안에서 발생하는 '사건'들을 의미합니다.</p>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Event Examples</h3>
+                <ul>
+                    <li><i class="fa-solid fa-caret-right"></i> 버튼 입력 발생</li>
+                    <li><i class="fa-solid fa-caret-right"></i> 적과 충돌함</li>
+                    <li><i class="fa-solid fa-caret-right"></i> 아이템 획득</li>
+                    <li><i class="fa-solid fa-caret-right"></i> 체력이 0이 됨</li>
+                </ul>
+            </div>
+            <div class="center-text">
+                <p class="highlight-box">이벤트가 발생하면<br><strong>→ 상태가 변합니다.</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 10: Rules -->
+<div class="slide">
+    <div class="content">
+        <h2>규칙(Rules)의 존재</h2>
+        <p>게임은 규칙들의 집합입니다. 우리는 이것을 <strong>로직(Logic)</strong>으로 구현합니다.</p>
+        <pre><code><span class="comment"># 규칙 예시</span>
+
+<span class="comment"># 1. 플레이어는 벽을 통과할 수 없다</span>
+if player.is_colliding(wall):
+    player.stop_movement()
+
+<span class="comment"># 2. HP가 0이면 죽음 상태</span>
+if player.hp <= 0:
+    player.set_state("DEAD")
+
+<span class="comment"># 3. 동전 10개 -> 보너스 점수</span>
+if coin_count >= 10:
+    score += 1000</code></pre>
+    </div>
+</div>
+
+<!-- Slide 11: Real-time Processing -->
+<div class="slide">
+    <div class="content">
+        <h2>실시간 처리 (Real-time)</h2>
+        <div class="center-text">
+            <i class="fa-solid fa-stopwatch big-icon"></i>
+            <p><strong>"Instant Reaction"</strong></p>
+        </div>
+        <ul>
+            <li>사용자의 입력에 <strong>즉각 반응</strong>해야 합니다.</li>
+            <li>화면이 멈추지 않고 <strong>자연스럽게 유지</strong>되어야 합니다.</li>
+            <li>시스템 지연(Lag)이나 프레임 드랍은 게임 경험을 파괴합니다.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Slide 12: Frames -->
+<div class="slide">
+    <div class="content">
+        <h2>프레임(Frame)의 개념</h2>
+        <p>게임 화면은 사실 <strong>정지된 이미지들의 연속</strong>입니다.</p>
+        <div class="grid-2">
+            <div>
+                <h3>FPS (Frames Per Second)</h3>
+                <ul>
+                    <li><strong>60 FPS:</strong> 1초에 60장의 화면을 보여줌</li>
+                    <li><strong>1 Frame:</strong> 약 0.016초 (16ms)</li>
+                </ul>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-film big-icon"></i>
+                <p>FPS가 떨어지면<br>게임이 끊겨 보입니다 (Lag).</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 13: Tasks per Frame -->
+<div class="slide">
+    <div class="content">
+        <h2>프레임마다 일어나는 일</h2>
+        <p>그 찰나의 시간(0.016초) 동안 컴퓨터는 엄청난 일을 합니다.</p>
+        <ul style="font-size: 1.6rem; line-height: 2;">
+            <li>1. 입력 체크 (Polling)</li>
+            <li>2. 물리 계산 (Physics)</li>
+            <li>3. AI 생각 (Logic)</li>
+            <li>4. UI 업데이트</li>
+            <li>5. 사운드 재생</li>
+            <li>6. 그래픽 렌더링 (Draw)</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Slide 14: Frame-based Math -->
+<div class="slide">
+    <div class="content">
+        <h2>예제: 프레임 기반 위치 계산</h2>
+        <p>플레이어 속도가 <strong>초당 100px</strong>이라고 가정해봅시다.</p>
+        <div class="card">
+            <h3>60 FPS 환경이라면?</h3>
+            <p>한 번의 프레임(Loop)에서 이동해야 하는 거리는?</p>
+            <p class="highlight-box" style="font-size: 2rem;">100px / 60 frames ≈ <strong>1.66px</strong></p>
+        </div>
+        <p style="margin-top: 1rem;">매 프레임마다 아주 조금씩 이동시키면, 우리 눈에는 부드럽게 움직이는 것처럼 보입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 15: Input Handling -->
+<div class="slide">
+    <div class="content">
+        <h2>게임 입력 처리 방식</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>1. Polling (폴링)</h3>
+                <p>매 프레임마다 "지금 키 눌렸니?"라고 물어봅니다.</p>
+                <p style="color: #7ee787;">→ 대부분의 게임 루프가 사용하는 방식</p>
+            </div>
+            <div class="card" style="opacity: 0.6;">
+                <h3>2. Event-driven</h3>
+                <p>OS가 "키 눌렸다!"라고 알려줄 때만 처리합니다.</p>
+                <p>→ UI나 웹앱에서 주로 사용</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 16: Input Code -->
+<div class="slide">
+    <div class="content">
+        <h2>예제: 입력 처리 코드</h2>
+        <p>이 코드는 1초에 60번 실행된다는 점을 기억하세요.</p>
+        <pre><code><span class="comment"># Update 함수 (매 프레임 호출)</span>
+
+if Input.is_key_pressed(KEY_RIGHT):
+    <span class="comment"># 오른쪽 키가 눌려있다면</span>
+    <span class="comment"># 속도(speed) * 시간(delta) 만큼 이동</span>
+    player.x += speed * delta</code></pre>
+    </div>
+</div>
+
+<!-- Slide 17: Interaction -->
+<div class="slide">
+    <div class="content">
+        <h2>객체 간 상호작용 (Interaction)</h2>
+        <p>게임의 재미는 객체들이 부딪힐 때 발생합니다.</p>
+        <ul>
+            <li><strong>충돌 (Collision):</strong> 두 물체의 영역이 겹쳤는가?</li>
+            <li>플레이어가 적과 겹침 → <span style="color:#ff7b72;">HP 감소</span></li>
+            <li>총알이 벽과 겹침 → <span style="color:#a5d6ff;">총알 삭제 & 스파크 효과</span></li>
+        </ul>
+        <p style="margin-top: 1rem; color: #8b949e;">모든 상호작용 체크도 매 프레임 수행됩니다.</p>
+    </div>
+</div>
+
+<!-- Slide 18: Collision Code -->
+<div class="slide">
+    <div class="content">
+        <h2>충돌 처리 예제</h2>
+        <p>상태 변화 코드의 전형적인 형태입니다.</p>
+        <pre><code><span class="comment"># 매 프레임 체크</span>
+
+<span class="comment"># A의 박스와 B의 박스가 겹치는지 수학적으로 계산</span>
+if player.rect.intersects(enemy.rect):
+    
+    <span class="comment"># 겹쳤다면(충돌했다면) 상태 변경</span>
+    player.hp -= 10
+    player.play_sound("ouch")
+    
+    <span class="comment"># 무적 상태로 변경 (연속 피격 방지)</span>
+    player.set_invincible(True)</code></pre>
+    </div>
+</div>
+
+<!-- Slide 19: Animation -->
+<div class="slide">
+    <div class="content">
+        <h2>애니메이션의 업데이트</h2>
+        <p>움직임도 결국 <strong>이미지 교체</strong>의 연속입니다.</p>
+        <div class="grid-2">
+            <div>
+                <ul>
+                    <li><strong>걷기:</strong> 1번~6번 스프라이트를 순서대로 보여줌</li>
+                    <li><strong>공격:</strong> 공격 키를 누르면 공격 애니메이션 프레임으로 전환</li>
+                    <li>타이밍에 맞춰 이미지를 바꿔주는 것도 <strong>게임 루프</strong>의 역할입니다.</li>
+                </ul>
+            </div>
+            <div class="card center-text">
+                <i class="fa-solid fa-person-running big-icon"></i><br>
+                Frame 1 → Frame 2 → Frame 3...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 20: Animation Code -->
+<div class="slide">
+    <div class="content">
+        <h2>간단한 애니메이션 코드</h2>
+        <p>시간(delta)을 누적하여 프레임을 결정합니다.</p>
+        <pre><code><span class="comment"># 현재 프레임 번호 (실수형)</span>
+frame += delta * animation_speed
+
+<span class="comment"># 전체 프레임 수로 나눈 나머지 (0, 1, 2, 3 반복)</span>
+current_index = int(frame) % total_frames
+
+<span class="comment"># 해당 이미지로 교체</span>
+sprite.image = frames[current_index]</code></pre>
+        <p class="comment">알고리즘 문제 풀 때 자주 쓰던 모듈러 연산(%)이 여기서도 쓰입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 21: Game Systems -->
+<div class="slide">
+    <div class="content">
+        <h2>게임 시스템 구성 요소</h2>
+        <p>게임은 하나의 거대한 프로그램이지만, 내부는 여러 전문가 시스템의 조합입니다.</p>
+        <div class="highlight-box" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+            <div>렌더링 시스템<br><span style="font-size:0.8em; color:#8b949e;">(Graphics)</span></div>
+            <div>물리 엔진<br><span style="font-size:0.8em; color:#8b949e;">(Physics)</span></div>
+            <div>오디오 엔진<br><span style="font-size:0.8em; color:#8b949e;">(Sound)</span></div>
+            <div>UI 시스템<br><span style="font-size:0.8em; color:#8b949e;">(Interface)</span></div>
+            <div>입력 시스템<br><span style="font-size:0.8em; color:#8b949e;">(Input)</span></div>
+            <div style="background:#30363d; border-radius:4px;">스크립트 (로직)<br><span style="font-size:0.8em; color:#7ee787;">(We are here!)</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 22: Game Engine Role -->
+<div class="slide">
+    <div class="content">
+        <h2>게임 엔진의 역할</h2>
+        <p>우리가 렌더링, 물리 공식을 처음부터 다 짤 필요는 없습니다.</p>
+        <div class="card">
+            <h3>Game Engine (Godot, Unity, Unreal)</h3>
+            <p>개발자가 <strong>'게임의 재미(규칙)'</strong> 구현에만 집중할 수 있도록<br>복잡한 시스템(그래픽, 물리, 사운드 등)을 미리 만들어 제공하는 도구입니다.</p>
+        </div>
+        <p style="text-align: center; margin-top: 1rem;">"바퀴를 다시 발명하지 마라 (Don't reinvent the wheel)"</p>
+    </div>
+</div>
+
+<!-- Slide 23: Scene Concept -->
+<div class="slide">
+    <div class="content">
+        <h2>씬(Scene) 개념</h2>
+        <p>게임을 구성하는 하나의 <strong>장면 단위</strong>입니다.</p>
+        <ul>
+            <li>타이틀 화면 Scene</li>
+            <li>스테이지 1 Scene</li>
+            <li>게임 오버 Scene</li>
+        </ul>
+        <p>씬은 수많은 <strong>게임 오브젝트들의 집합</strong>입니다.<br>Godot 엔진에서는 <strong>노드 트리(Node Tree)</strong>가 씬을 구성합니다.</p>
+    </div>
+</div>
+
+<!-- Slide 24: Scene Tree Structure -->
+<div class="slide">
+    <div class="content">
+        <h2>씬 트리 구조 (Scene Tree)</h2>
+        <p>트리(Tree) 자료구조가 여기서 핵심적으로 사용됩니다.</p>
+        <div class="card" style="padding-left: 3rem;">
+            <div class="tree-node"><span class="tree-item"><i class="fa-solid fa-gamepad"></i> Player (Root)</span>
+                <div class="tree-node"><span class="tree-item"><i class="fa-solid fa-image"></i> Sprite (이미지)</span></div>
+                <div class="tree-node"><span class="tree-item"><i class="fa-solid fa-shapes"></i> CollisionShape (충돌박스)</span></div>
+                <div class="tree-node"><span class="tree-item"><i class="fa-solid fa-clapperboard"></i> AnimationPlayer</span></div>
+                <div class="tree-node"><span class="tree-item"><i class="fa-solid fa-volume-high"></i> AudioStreamPlayer</span></div>
+            </div>
+        </div>
+        <p style="margin-top: 1rem; color: #8b949e;">부모 노드가 움직이면 자식 노드들도 따라 움직입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 25: Real-time Debugging -->
+<div class="slide">
+    <div class="content">
+        <h2>실시간 디버깅의 개념</h2>
+        <p>일반 프로그램 디버깅과는 조금 다릅니다.</p>
+        <div class="grid-2">
+            <div>
+                <h3>어려운 점</h3>
+                <ul>
+                    <li>변수 값이 1초에 60번 바뀝니다.</li>
+                    <li>중단점(Breakpoint)을 걸면 게임 시간이 멈춥니다.</li>
+                    <li>물리 충돌은 눈 깜짝할 새 지나갑니다.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>해결책</h3>
+                <p>화면에 직접 정보를 그려서 확인합니다.<br>(Visual Debugging)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 26: Debug Example -->
+<div class="slide">
+    <div class="content">
+        <h2>예제: 디버그 표시</h2>
+        <p>콘솔 출력(print)보다 화면 출력(Draw)이 유리할 때가 많습니다.</p>
+        <pre><code><span class="comment"># _draw() 함수: 매 프레임 화면 위에 그림을 그림</span>
+
+<span class="comment"># 플레이어 머리 위에 HP 표시</span>
+draw_text(f"HP: {player.hp}", player.x, player.y - 50)
+
+<span class="comment"># 충돌 박스 범위를 빨간 선으로 표시</span>
+draw_rect(player.rect, Color.RED, false)</code></pre>
+    </div>
+</div>
+
+<!-- Slide 27: Mindset Summary -->
+<div class="slide">
+    <div class="content">
+        <h2>게임 개발 사고방식 정리</h2>
+        <div class="card">
+            <ol style="font-size: 1.5rem; line-height: 2;">
+                <li>모든 것은 <strong>"상태(State)"</strong>로 표현된다.</li>
+                <li>상태는 <strong>매 프레임 업데이트</strong>된다 (Loop).</li>
+                <li><strong>이벤트</strong>는 상태를 변화시킨다.</li>
+                <li>오브젝트 간 <strong>관계(Tree)</strong>를 구조화해야 한다.</li>
+                <li>규칙(Rule)은 <strong>코드로 구현된 논리</strong>다.</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 28: Connecting Concepts -->
+<div class="slide">
+    <div class="content">
+        <h2>지금까지 배운 개념 연결하기</h2>
+        <p>게임의 한 장면에서 이 모든 것이 <strong>동시에</strong> 발생합니다.</p>
+        <div class="highlight-box">
+            <span style="color:#7ee787;">[입력 처리]</span> → 
+            <span style="color:#79c0ff;">[이동/충돌 계산]</span> → 
+            <span style="color:#d2a8ff;">[상태 업데이트]</span> → 
+            <span style="color:#ffa657;">[애니메이션]</span> → 
+            <span style="color:#fff;">[렌더링]</span>
+        </div>
+        <p class="center-text" style="margin-top: 1rem;">이 사이클이 멈추지 않고 도는 것이 바로 <strong>게임</strong>입니다.</p>
+    </div>
+</div>
+
+<!-- Slide 29: Final Example -->
+<div class="slide">
+    <div class="content">
+        <h2>종합 예제 코드</h2>
+        <p>이 3가지만 이해해도 게임의 기본 구조가 보입니다.</p>
+        <pre><code>func _physics_process(delta): <span class="comment"># 매 프레임 실행</span>
+    
+    <span class="comment"># 1. 입력 & 이동</span>
+    if Input.is_action_pressed("right"):
+        player.position.x += speed * delta
+
+    <span class="comment"># 2. 충돌 체크 (로직)</span>
+    if player.is_colliding_with(enemy):
+        player.hp -= 1
+        play_sound("hit")
+
+    <span class="comment"># 3. 렌더링은 엔진이 알아서 처리 (End of Frame)</span></code></pre>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const slides = document.querySelectorAll('.slide');
+        let currentSlideIndex = 0;
+
+        // 초기 슬라이드 설정
+        if (slides.length > 0) {
+            slides[currentSlideIndex].classList.add('active');
+        }
+
+        function showSlide(index) {
+            // 슬라이드 배열의 범위를 벗어나지 않도록 방지
+            if (index < 0) {
+                index = 0; // 첫 슬라이드에서 멈춤
+            }
+            if (index >= slides.length) {
+                index = slides.length - 1; // 마지막 슬라이드에서 멈춤
+            }
+
+            if (index !== currentSlideIndex) {
+                // 이전 슬라이드 비활성화
+                slides[currentSlideIndex].classList.remove('active');
+                
+                // 새 인덱스로 업데이트
+                currentSlideIndex = index;
+                
+                // 새 슬라이드 활성화
+                slides[currentSlideIndex].classList.add('active');
+            }
+        }
+
+        // Make showSlide callable from parent (iframe messaging or direct access)
+        try{
+            window.showSlide = showSlide; // allow parent to call directly when same-origin
+        }catch(e){/* ignore */}
+
+        // Listen for postMessage commands from parent window
+        window.addEventListener('message', (ev) => {
+            // basic validation: expect object with { type: 'gotoSlide', index: number }
+            try{
+                const msg = (typeof ev.data === 'string') ? JSON.parse(ev.data) : ev.data;
+                if(msg && msg.type === 'gotoSlide' && typeof msg.index === 'number'){
+                    showSlide(msg.index);
+                }
+            }catch(err){
+                // ignore malformed messages
+            }
+        });
+
+        // 키보드 이벤트 리스너
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowRight' || event.key === ' ' || event.key === 'Enter') {
+                // 오른쪽 화살표, 스페이스바, 엔터: 다음 슬라이드
+                showSlide(currentSlideIndex + 1);
+            } else if (event.key === 'ArrowLeft') {
+                // 왼쪽 화살표: 이전 슬라이드
+                showSlide(currentSlideIndex - 1);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
