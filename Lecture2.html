@@ -209,12 +209,13 @@
     <div class="content">
         <h2>추가적인 선택 이유 (교육용 관점)</h2>
         <p>교육자 및 학습자 모두에게 Godot은 명확한 이점을 제공합니다.</p>
-            <div class="card">
-                <h3>차이점 — 예제</h3>
-                <div style="display:flex;gap:0.8rem;">
-                    <div style="flex:1;">
-                        <div style="font-weight:700;margin-bottom:6px;color:#a5d6ff;">Python</div>
-                        <pre><code># 변수
+        <div class="card">
+            <ul>
+                <li><i class="fa-solid fa-globe" style="color: #a5d6ff;"></i> <strong>오픈소스 엔진</strong> → 무료, 상업적 사용 제한 및 라이선스 걱정 없음.</li>
+                <li><i class="fa-solid fa-download" style="color: #a5d6ff;"></i> <strong>설치 용량이 작음</strong> → 실습 환경 준비가 매우 쉬움 (단일 실행 파일).</li>
+                <li><i class="fa-solid fa-magnifying-glass" style="color: #a5d6ff;"></i> <strong>에디터 UI 직관적</strong> → 초급자가 Node/Scene 구조를 빠르게 이해할 수 있음.</li>
+                <li>강의 흐름이 <strong>바로 실습</strong>에 집중할 수 있도록 지원합니다.</li>
+            </ul>
         </div>
     </div>
 </div>
@@ -226,10 +227,6 @@
         <div class="grid-2">
             <div class="card">
                 <h3>Godot</h3>
-                    </div>
-                    <div style="flex:1;">
-                        <div style="font-weight:700;margin-bottom:6px;color:#7ee787;">GDScript</div>
-                        <pre><code># 변수 (typed)
                 <ul>
                     <li><strong>라이선스:</strong> MIT 기반(오픈소스) — 무료</li>
                     <li><strong>상업적 사용:</strong> 비용 없음</li>
@@ -242,14 +239,6 @@
                     <li><strong>Unity:</strong> 개인/학생 무료, 수익 기준 유료 플랜(Plus/Pro/Enterprise)</li>
                     <li><strong>Unreal:</strong> 무료 사용 가능, 상업적 수익이 일정 기준 초과 시 로열티 발생(엔진 정책에 따라 변경)</li>
                     <li><strong>주의:</strong> 엔진별 라이선스·서비스 약관이 수시로 변경될 수 있음</li>
-                    </div>
-                </div>
-                <ul style="margin-top:6px;">
-                    <li><strong>export/onready:</strong> 에디터에서 노출되는 변수 선언(예: export var speed = 200)</li>
-                    <li><strong>시그널:</strong> GDScript는 built-in signal 선언/emit 사용 (engine event와 자연스럽게 연결)</li>
-                    <li><strong>동시성:</strong> Python은 asyncio, GDScript는 yield/await와 엔진의 프레임 콜백 사용</li>
-                </ul>
-            </div>
                 </ul>
             </div>
         </div>
@@ -644,79 +633,6 @@ func add(a, b):
             </div>
         </div>
         <p class="center-text" style="margin-top: 1rem;">문법이 매우 비슷하여 진입 장벽이 낮습니다.</p>
-    </div>
-</div>
-
-<!-- Slide PY-1: Syntax & Layout -->
-<div class="slide">
-    <div class="content">
-        <h2>Python vs GDScript — 문법</h2>
-        <div class="grid-2">
-            <div class="card">
-                <h3>공통점</h3>
-                <ul>
-                    <li>들여쓰기 기반 블록</li>
-                    <li>간결한 함수/클래스 정의</li>
-                    <li>읽기 쉬운 문법</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h3>차이점</h3>
-                <ul>
-                    <li>GDScript: 엔진 API와 통합된 키워드/메서드</li>
-                    <li>Python: 더 많은 표준 라이브러리</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Slide PY-2: Typing & Performance -->
-<div class="slide">
-    <div class="content">
-        <h2>타이핑 & 성능</h2>
-        <div class="grid-2">
-            <div class="card">
-                <h3>타입</h3>
-                <ul>
-                    <li>Python: 동적 타입, 타입 힌트 지원</li>
-                    <li>GDScript: 기본적으로 동적, 명시적 타입 선언 가능</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h3>성능</h3>
-                <ul>
-                    <li>GDScript는 엔진에 최적화되어 있어 게임 로직에 적합</li>
-                    <li>핫스팟(성능 중요 코드)은 C#/GDNative 사용 고려</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Slide PY-3: Runtime Integration & Tooling -->
-<div class="slide">
-    <div class="content">
-        <h2>런타임 통합 & 툴링</h2>
-        <div class="grid-2">
-            <div class="card">
-                <h3>GDScript</h3>
-                <ul>
-                    <li>에디터와 밀접 통합(즉시 반영)</li>
-                    <li>엔진 콜백(_ready, _process 등) 사용</li>
-                    <li>Scene/Node에 스크립트 바로 첨부</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h3>Python</h3>
-                <ul>
-                    <li>광범위한 생태계(라이브러리 사용 가능)</li>
-                    <li>게임 엔진 내 직접 사용 시 래퍼 또는 외부 프로세스 필요</li>
-                    <li>툴 제작/데이터 처리에 유리</li>
-                </ul>
-            </div>
-        </div>
-        <p style="margin-top:1rem;color:#8b949e;">요약: 빠른 프로토타이핑과 엔진 통합은 GDScript, 범용 라이브러리/툴은 Python</p>
     </div>
 </div>
 
