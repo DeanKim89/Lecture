@@ -55,13 +55,14 @@
         /* --- SLIDE ITEM --- */
         .slide {
             display: none; /* 기본적으로 숨김 */
-            height: 100%;
+            height: 100%; /* 슬라이드 높이 꽉 채움 */
             width: 100%;
-            padding: 50px 70px;
+            padding: 40px 60px; /* 패딩 약간 조정 */
             flex-direction: column;
             justify-content: center;
             animation: fadeIn 0.4s ease-in-out;
             z-index: 1;
+            flex: 1; /* 남은 공간 차지 */
         }
 
         .slide.active {
@@ -77,14 +78,14 @@
         h1.main-title {
             font-size: 2.2rem;
             color: #fff;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             font-weight: 700;
         }
 
         h2.slide-title {
             font-size: 2rem;
             color: #7ee787; /* Green Accent */
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border-left: 6px solid #7ee787;
             padding-left: 20px;
             font-weight: 700;
@@ -106,15 +107,17 @@
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 50px;
+            gap: 40px;
             height: 100%;
+            /* min-height: 0;  Flex/Grid overflow 방지용 */
         }
 
         /* --- LEFT COLUMN: Instructions --- */
         .instruction-col {
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start; /* 위쪽 정렬로 변경하여 여백 활용 */
+            padding-top: 20px;
         }
 
         ul.step-list {
@@ -168,8 +171,9 @@
         }
 
         .image-container {
-            width: 100%;
-            height: 360px;
+            width: 480;
+            height: 360; /* 고정 높이 360px -> 100%로 변경하여 꽉 채움 */
+            max-height: 500px; /* 너무 커지지 않도록 제한 (필요시 제거 가능) */
             background-color: #010409;
             border: 2px dashed #30363d;
             border-radius: 12px;
@@ -185,6 +189,7 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+            /* transform: scale(1.2); 제거 - 이미지가 잘리지 않게 함 */
         }
 
         .placeholder-text {
@@ -281,16 +286,7 @@
                 </div>
                 <div class="image-col">
                     <div class="image-container">
-                        <!-- Slide 1 Image -->
-                        <!-- 플레이스홀더를 숨기고 이미지를 활성화했습니다 -->
-                        <!-- 
-                        <div class="placeholder-text">
-                            <i class="fa-solid fa-image"></i>
-                            <p><strong>화면/렌더링 설정 스크린샷</strong></p>
-                            <p style="font-size: 0.9rem; margin-top: 10px;">Viewport & Texture Filter Settings</p>
-                        </div> 
-                        -->
-                        <img src="img_lecture3-1.png" alt="화면 및 렌더링 설정 스크린샷">
+                        <img src="./img_lecture3-1.png" alt="화면 및 렌더링 설정 스크린샷">
                     </div>
                 </div>
             </div>
@@ -321,13 +317,7 @@
                 </div>
                 <div class="image-col">
                     <div class="image-container">
-                        <!-- Slide 2 Image -->
-                        <div class="placeholder-text">
-                            <i class="fa-solid fa-gamepad"></i>
-                            <p><strong>입력 맵 설정 스크린샷</strong></p>
-                            <p style="font-size: 0.9rem; margin-top: 10px;">Input Map Configuration</p>
-                        </div>
-                        <!-- <img src="slide2_image.png" alt="Input Map"> -->
+                        <img src="./img_lecture3-2.png" alt="입력 맵 설정 스크린샷">
                     </div>
                 </div>
             </div>
