@@ -81,6 +81,43 @@ p, li { font-size: 1.1rem; line-height: 1.6; color: #c9d1d9; }
 .col-left { display: flex; flex-direction: column; justify-content: center; }
 .col-right { display: flex; flex-direction: column; justify-content: center; height: 100%; }
 
+/* Backwards-compat: classes used in project-setting slides */
+.instruction-col { display: flex; flex-direction: column; justify-content: flex-start; padding-top: 20px; }
+.image-col { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+
+ul.step-list { list-style: none; padding: 0; }
+ul.step-list li {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #c9d1d9;
+  margin-bottom: 16px;
+  padding-left: 24px;
+  position: relative;
+}
+ul.step-list li::before {
+  content: "\f054"; /* Chevron Right (Font Awesome) */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  color: #7ee787;
+  position: absolute;
+  left: 0;
+  top: 6px;
+  font-size: 0.8rem;
+}
+.path-text {
+  color: #8b949e;
+  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.page-indicator {
+  color: #8b949e;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+}
+
 /* Code block */
 .code-block {
   background-color: #161b22;
@@ -147,6 +184,11 @@ p, li { font-size: 1.1rem; line-height: 1.6; color: #c9d1d9; }
   align-items: center;
   padding: 0 40px;
   z-index: 10;
+}
+.nav-buttons {
+  display: flex;
+  gap: 15px;
+  align-items: center;
 }
 .nav-btn, button.nav-btn {
   background-color: #21262d; border: 1px solid #30363d; color: #c9d1d9;
