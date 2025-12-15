@@ -39,56 +39,52 @@
             </div>
         </div>
 
-        <!-- SLIDE 2: Add Map to Main Scene -->
+        <!-- SLIDE 2: Inspect Provided Map & Layers -->
         <div class="slide">
-            <h1 class="main-title">맵 추가 (TileMap)</h1>
+            <h1 class="main-title">제공된 맵 씬과 레이어 구조</h1>
             <div class="grid-2">
                 <div class="col-left">
-                    <h2 class="slide-title">Main 씬에 TileMap 배치하기</h2>
-                    <p style="margin-bottom:10px;">TileSet을 준비한 뒤 `TileMap` 노드를 추가하고, 맵을 그립니다. 충돌 레이어를 TileSet에서 설정하세요.</p>
+                    <h2 class="slide-title">맵은 여러 TileMap 레이어의 합입니다</h2>
+                    <p style="margin-bottom:10px;">이번 수업에는 이미 만들어진 맵 씬이 제공됩니다. 이 맵은 하나의 그림이 아니라 여러 TileMap 레이어를 겹쳐 구성되어 있습니다. 각 레이어는 역할이 다릅니다.</p>
                     <div style="background:#161b22;padding:16px;border-radius:8px;border:1px solid #30363d;color:#c9d1d9;">
                         <ol style="padding-left:18px;line-height:1.7;">
-                            <li>루트 노드(예: Main) 아래에 <code>TileMap</code> 추가</li>
-                            <li>TileSet 에디터에서 충돌 레이어(Collision)를 설정</li>
-                            <li>맵을 타일로 채워 플레이어가 이동 가능한 지형을 만든다</li>
+                            <li><strong>Floor(바닥) 레이어</strong>: 플레이어가 걸어다니는 기본 타일을 포함합니다.</li>
+                            <li><strong>Wall(벽) 레이어</strong>: 충돌이 필요한 타일을 포함 — 이 레이어에 충돌(Collision)을 설정해 플레이어가 통과하지 못하도록 합니다.</li>
+                            <li><strong>Object/Decoration 레이어</strong>: 시각적 장식이나 인터랙션 요소(예: 책상, 화분)를 올립니다; 보통 충돌 없거나 별도 레이어로 처리합니다.</li>
+                            <li><strong>Door/Trigger 레이어</strong>: 문이나 문구간 같은 상호작용 가능한 타일을 놓습니다 — 문은 열림/닫힘 로직과 연계될 수 있습니다.</li>
                         </ol>
                     </div>
+                    <p style="margin-top:10px;color:#8b949e;">중요: 레이어의 순서(Z-order)가 시각과 충돌에 영향을 줍니다. 예를 들어 Decoration은 플레이어 위에 보이도록 위쪽에 두고, 충돌 레이어는 별도로 관리하세요.</p>
                 </div>
                 <div class="col-right">
                     <div class="image-container">
-                        <p style="color:#8b949e;">TileMap / TileSet 스크린샷 자리</p>
+                        <img src="Img_lecture3-6.png" alt="3교시 개요 이미지">
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 3: Interactive Item (Area2D) -->
+        <!-- SLIDE 3: Interactive Item (StaticBody2D to avoid overlap) -->
         <div class="slide">
-            <h1 class="main-title">인터랙션 아이템 만들기</h1>
+            <h1 class="main-title">인터랙션 아이템 만들기 (중복 방지)</h1>
             <div class="grid-2">
                 <div class="col-left">
-                    <h2 class="slide-title">Area2D로 아이템 제작</h2>
-                    <p style="margin-bottom:10px;">아이템은 `Area2D` + `CollisionShape2D` + Sprite로 구성합니다. 신호(`body_entered`) 또는 코드로 습득 처리를 합니다.</p>
+                    <h2 class="slide-title">`StaticBody2D`로 아이템 제작 (겹치지 않도록)</h2>
+                    <p style="margin-bottom:10px;">아이템은 충돌로 인해 다른 아이템과 겹치면 안 되므로 `StaticBody2D`를 사용합니다. Sprite는 Region을 사용해 스프라이트 시트에서 프레임을 선택하고, `CollisionShape2D`는 Rectangle으로 설정해 타일/아이템 크기와 맞춥니다.</p>
                     <div class="code-block">
-<pre><code>extends Area2D
-
-@onready var sprite = $Sprite2D
-
-func _ready():
-	connect("body_entered", Callable(self, "_on_body_entered"))
-
-func _on_body_entered(body):
-	if body.name == "Player":
-		# 플레이어가 닿으면 아이템 비활성화 및 점수 보상
-		queue_free()  # 또는 hide()
-		Score.add_points(10)
+<pre><code># 노드 구조 (예)
+StaticBody2D
+├─ Sprite2D        # Texture 할당, Inspector에서 Region 켬 → Region Rect로 프레임 선택
+├─ CollisionShape2D # Shape: Rectangle -> 크기를 아이템 크기에 맞춤
+└─ (Optional) Area2D for signals (if you prefer event-driven pickup)
 </code></pre>
                     </div>
-                    <p style="margin-top:10px;color:#8b949e;">참고: `Score`는 Autoload(singleton)라고 가정합니다.</p>
+                    <p style="margin-top:10px;color:#8b949e;">설정 팁: Sprite2D에서 <em>Region</em>을 켜고 드래그로 프레임 영역을 지정하세요. `CollisionShape2D`의 Rectangle은 스프라이트 투명 부분을 제외한 실제 보이는 영역에 맞춰 조정합니다.</p>
+                    <p style="margin-top:8px;color:#8b949e;">주의: 픽업 처리는 플레이어의 RayCast 또는 별도의 입력 처리(스페이스)를 통해 검사합니다 — 슬라이드 4에서 설명합니다.</p>
                 </div>
                 <div class="col-right">
                     <div class="image-container">
-                        <p style="color:#8b949e;">아이템 노드 구조: Area2D → CollisionShape2D, Sprite2D</p>
+                        <img src="Img_lecture3-7.png" alt="3교시 개요 이미지">
                     </div>
                 </div>
             </div>
@@ -107,13 +103,12 @@ func _on_body_entered(body):
 @onready var ray = $RayCast2D
 
 func _input(event):
-	if event.is_action_pressed("ui_accept"):
+	if Input.is_action_just_pressed("interact"):
 		if ray.is_colliding():
-			var collider = ray.get_collider()
-			if collider is Area2D:
-				# 아이템 습득
-				collider.queue_free()
-				Score.add_points(10)
+			var target = ray.get_collider()
+			if target.is_in_group("interactable"):
+				if target.has_method("interact"):
+					target.interact()
 </code></pre>
                     </div>
                     <p style="margin-top:10px;color:#8b949e;">RayCast는 플레이어 앞쪽으로 향하게 설정하고 레이어/마스크를 조정하세요.</p>
