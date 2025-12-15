@@ -66,10 +66,10 @@
 
         <!-- SLIDE 3: Interactive Item (StaticBody2D to avoid overlap) -->
         <div class="slide">
-            <h1 class="main-title">인터랙션 아이템 만들기 (중복 방지)</h1>
+            <h1 class="main-title">인터랙션 아이템 만들기</h1>
             <div class="grid-2">
                 <div class="col-left">
-                    <h2 class="slide-title">`StaticBody2D`로 아이템 제작 (겹치지 않도록)</h2>
+                    <h2 class="slide-title">`StaticBody2D`로 아이템 제작</h2>
                     <p style="margin-bottom:10px;">아이템은 충돌로 인해 다른 아이템과 겹치면 안 되므로 `StaticBody2D`를 사용합니다. Sprite는 Region을 사용해 스프라이트 시트에서 프레임을 선택하고, `CollisionShape2D`는 Rectangle으로 설정해 타일/아이템 크기와 맞춥니다.</p>
                     <div class="code-block">
 <pre><code># 노드 구조 (예)
@@ -90,7 +90,32 @@ StaticBody2D
             </div>
         </div>
 
-        <!-- SLIDE 4: Player RayCast and Pickup -->
+        <!-- SLIDE 4: Item Script Example (interact) -->
+        <div class="slide">
+            <h1 class="main-title">아이템 인터랙션 스크립트</h1>
+            <div class="grid-2">
+                <div class="col-left">
+                    <h2 class="slide-title">StaticBody2D의 간단한 interact() 예시</h2>
+                    <p style="margin-bottom:10px;">아이템에 아래 스크립트를 붙이면, 플레이어가 상호작용 시 메시지 출력 후 아이템이 제거됩니다.</p>
+                    <div class="code-block">
+<pre><code>extends StaticBody2D
+
+func interact():
+	print("10점 획득!")
+	queue_free()
+</code></pre>
+                    </div>
+                    <p style="margin-top:10px;color:#8b949e;">주의: 이 메서드는 플레이어 코드에서 `target.interact()`로 호출됩니다. StaticBody2D에 스크립트를 연결하고 `interactable` 그룹에 추가하세요.</p>
+                </div>
+                <div class="col-right">
+                    <div class="image-container">
+                        <p style="color:#8b949e;">아이템 스크립트 예시: `StaticBody2D`에 붙여 사용</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Player RayCast and Pickup -->
         <div class="slide">
             <h1 class="main-title">플레이어 RayCast로 습득</h1>
             <div class="grid-2">
@@ -102,12 +127,18 @@ StaticBody2D
 
 @onready var ray = $RayCast2D
 
-func _input(event):
+
+func _physics_process(delta: float) -> void:
+    # 기존 이동 코드...
+
+    #RayCast 방향 설정 (플레이어 앞쪽)
+    ray.target_position = direction * 20
+
 	if Input.is_action_just_pressed("interact"):
 		if ray.is_colliding():
 			var target = ray.get_collider()
 			if target.is_in_group("interactable"):
-				if target.has_method("interact"):
+				if target.has_method("interact"): # 덕 타이핑
 					target.interact()
 </code></pre>
                     </div>
@@ -115,37 +146,37 @@ func _input(event):
                 </div>
                 <div class="col-right">
                     <div class="image-container">
-                        <p style="color:#8b949e;">RayCast 방향/길이 예시</p>
+                        <img src="Img_lecture3-8.png" alt="3교시 개요 이미지">
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 5: Autoload (Score singleton) -->
+        <!-- SLIDE 5: Autoload (Game_Manager singleton) -->
         <div class="slide">
             <h1 class="main-title">Autoload로 점수 관리</h1>
             <div class="grid-2">
                 <div class="col-left">
-                    <h2 class="slide-title">Score singleton 만들기</h2>
-                    <p style="margin-bottom:10px;">`Score.gd`를 만들어 Autoload로 등록하면 씬 간에 점수 공유가 편합니다.</p>
+                    <h2 class="slide-title">GameManager singleton 만들기</h2>
+                    <p style="margin-bottom:10px;">`game_manager.gd`를 만들어 Autoload로 등록하면 씬 간에 점수 공유가 편합니다.</p>
                     <div class="code-block">
 <pre><code>extends Node
 
-var points: int = 0
+var score = 0
 
-func add_points(v: int) -> void:
-	points += v
-	print("Score:", points)
+signal score_updated
 
-func reset() -> void:
-	points = 0
+func add_point(amount):
+	score += amount
+	print("현재 점수: ", score)
+	score_updated.emit()
 </code></pre>
                     </div>
-                    <p style="margin-top:10px;color:#8b949e;">프로젝트 설정 → Autoload에서 `Score.gd`를 추가하고 이름을 `Score`로 설정하세요.</p>
+                    <p style="margin-top:10px;color:#8b949e;">프로젝트 설정 → Autoload에서 `game_manager.gd`를 추가하고 이름을 `GameManager`로 설정하세요.</p>
                 </div>
                 <div class="col-right">
                     <div class="image-container">
-                        <p style="color:#8b949e;">Autoload 등록 화면</p>
+                        <img src="Img_lecture3-9.png" alt="3교시 개요 이미지">
                     </div>
                 </div>
             </div>
@@ -163,15 +194,40 @@ func reset() -> void:
 
 @onready var score_label = $Label
 
-func _process(_delta):
-	score_label.text = str(Score.points)
+func _ready() -> void:
+	update_score_text()
+	GameManager.score_updated.connect(update_score_text)
+
+func update_score_text():
+	score_label.text = "Point : %d" % GameManager.score
 </code></pre>
                     </div>
-                    <p style="margin-top:10px;color:#8b949e;">더 나은 구조: 신호를 사용해 점수 변경 시만 갱신하도록 최적화할 수 있습니다.</p>
                 </div>
                 <div class="col-right">
                     <div class="image-container">
-                        <p style="color:#8b949e;">HUD 레이아웃 예시</p>
+                        <img src="Img_lecture3-10.png" alt="3교시 개요 이미지">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Note — change item script to use GameManager -->
+        <div class="slide">
+            <h1 class="main-title">아이템 스크립트 수정 안내</h1>
+            <div class="grid-2">
+                <div class="col-left">
+                    <h2 class="slide-title">interact()를 Autoload로 점수 증가 연동</h2>
+                    <p style="margin-bottom:10px;">설명 자료용으로, 아이템 스크립트는 아래처럼 Autoload(`GameManager`)를 호출해 점수를 올리도록 수정해야 합니다.</p>
+                    <div class="code-block">
+<pre><code>func interact():
+    GameManager.add_point(10)
+    queue_free()
+</code></pre>
+                    </div>
+                </div>
+                <div class="col-right">
+                    <div class="image-container">
+                        <p style="color:#8b949e;">item.gd 파일 수정</p>
                     </div>
                 </div>
             </div>
@@ -179,7 +235,7 @@ func _process(_delta):
 
         <!-- NAVIGATION -->
         <div class="nav-bar">
-            <div class="page-indicator">Page <span id="current-page">1</span> / 6</div>
+            <div class="page-indicator">Page <span id="current-page">1</span> / 8</div>
             <div class="nav-buttons">
                 <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)" disabled>
                     <i class="fa-solid fa-chevron-left"></i> 이전
