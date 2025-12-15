@@ -1,0 +1,167 @@
+/* Shared Lecture styles (extracted from HTML files)
+   Used by: Lecture3-proj-setting.html, Lecture3-player-character.html
+*/
+
+/* Reset & base */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: #0d1117;
+  color: #e6edf3;
+  font-family: 'Noto Sans KR', sans-serif;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Slider container */
+.slider-container {
+  width: 1280px;
+  height: 720px;
+  background-color: #0d1117;
+  position: relative;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.slider-container::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(56, 139, 253, 0.08) 0%, rgba(0,0,0,0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Slide */
+.slide {
+  display: none;
+  height: 100%;
+  width: 100%;
+  padding: 40px 60px;
+  flex-direction: column;
+  justify-content: flex-start;
+  animation: fadeIn 0.4s ease-in-out;
+  z-index: 1;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 110px; /* reserve space so bottom controls remain visible */
+}
+.slide.active { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Typography */
+h1.main-title { font-size: 2.4rem; color: #fff; margin-bottom: 1rem; font-weight: 700; }
+h2.slide-title { 
+  font-size: 1.8rem; color: #7ee787; margin-bottom: 1.5rem; 
+  border-left: 6px solid #7ee787; padding-left: 15px; font-weight: 700;
+}
+
+p, li { font-size: 1.1rem; line-height: 1.6; color: #c9d1d9; }
+.highlight { color: #a5d6ff; font-weight: bold; }
+.warn { color: #ff7b72; font-weight: bold; }
+
+/* Layout helpers */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; height: 100%; }
+.col-left { display: flex; flex-direction: column; justify-content: center; }
+.col-right { display: flex; flex-direction: column; justify-content: center; height: 100%; }
+
+/* Code block */
+.code-block {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #e6edf3;
+  overflow-x: auto;
+  position: relative;
+}
+.code-block::before {
+  content: 'GDScript';
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #30363d;
+  color: #8b949e;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-bottom-left-radius: 8px;
+}
+
+/* Tree view */
+.tree-view {
+  background-color: #161b22;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #30363d;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tree-item { margin-bottom: 12px; display: flex; align-items: center; }
+.tree-icon { width: 20px; text-align: center; margin-right: 10px; color: #8b949e; }
+.indent-1 { margin-left: 0px; }
+.indent-2 { margin-left: 30px; border-left: 2px solid #30363d; padding-left: 10px; }
+
+/* Image container */
+.image-container {
+  width: 100%;
+  height: 100%;
+  max-height: 480px;
+  background-color: #010409;
+  border: 2px dashed #30363d;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+.image-container img { width: 100%; height: 100%; object-fit: contain; }
+.placeholder-text { text-align: center; color: #8b949e; }
+
+/* Nav bar */
+.nav-bar, .nav-buttons { }
+.nav-bar {
+  height: 80px;
+  border-top: 1px solid #30363d;
+  background-color: #161b22;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  z-index: 10;
+}
+.nav-btn, button.nav-btn {
+  background-color: #21262d; border: 1px solid #30363d; color: #c9d1d9;
+  padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+}
+.nav-btn:hover:not(:disabled), button.nav-btn:hover:not(:disabled) { background-color: #30363d; color: #fff; }
+.nav-btn:disabled, button.nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* small helpers */
+.kwd { color: #ff7b72; }
+.func { color: #d2a8ff; }
+.str { color: #a5d6ff; }
+.cmt { color: #8b949e; font-style: italic; }
+.num { color: #79c0ff; }
+.cls { color: #f0883e; }
+
+/* Page specific adjustments can be added in the HTML files as inline <style> if needed */
