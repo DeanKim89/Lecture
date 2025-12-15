@@ -157,12 +157,12 @@
 @onready var anim = $AnimationPlayer
 
 func _physics_process(delta: float) -> void:
-    # 1. 입력 방향 벡터 구하기
-    var direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
-    
-    # 2. 이동 적용
-    velocity = direction * speed
-    move_and_slide()
+	# 1. 입력 방향 벡터 구하기
+	var direction = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+
+	# 2. 이동 적용
+	velocity = direction * speed
+	move_and_slide()
 </code></pre>
                     </div>
                 </div>
@@ -193,18 +193,18 @@ func _physics_process(delta: float) -> void:
                     </p>
                     <div class="code-block">
 <pre><code>if direction != Vector2.ZERO:
-    # 움직이는 중일 때 방향 체크
-    if direction.x > 0:
-        anim.play("walk_right") # 오른쪽
-    elif direction.x < 0:
-        anim.play("walk_left")  # 왼쪽
-    elif direction.y > 0:
-        anim.play("walk_down")  # 아래 (Y+)
-    elif direction.y < 0:
-        anim.play("walk_up")    # 위 (Y-)
-    
+	# 움직이는 중일 때 방향 체크
+	if direction.x > 0:
+		anim.play("walk_right") # 오른쪽
+	elif direction.x < 0:
+		anim.play("walk_left")  # 왼쪽
+	elif direction.y > 0:
+		anim.play("walk_down")  # 아래 (Y+)
+	elif direction.y < 0:
+		anim.play("walk_up")    # 위 (Y-)
+
 else:
-    anim.stop()
+	anim.stop()
 </code></pre>
                     </div>
                 </div>
@@ -244,17 +244,17 @@ else:
 var lastDirection = Vector2.DOWN
 
 if direction != Vector2.ZERO:
-    # 이동 로직...
-    lastDirection = direction  # 마지막 이동 방향 저장
+	# 이동 로직...
+	lastDirection = direction  # 마지막 이동 방향 저장
 else:
-    if lastDirection.x > 0:
-        anim.play("idle_right") # 오른쪽
-    elif lastDirection.x < 0:
-        anim.play("idle_left")  # 왼쪽
-    elif lastDirection.y > 0:
-        anim.play("idle_down")  # 아래
-    elif lastDirection.y < 0:
-        anim.play("idle_up")
+	if lastDirection.x > 0:
+		anim.play("idle_right") # 오른쪽
+	elif lastDirection.x < 0:
+		anim.play("idle_left")  # 왼쪽
+	elif lastDirection.y > 0:
+		anim.play("idle_down")  # 아래
+	elif lastDirection.y < 0:
+		anim.play("idle_up")
 </code></pre>
                     </div>
                 </div>
